@@ -116,7 +116,7 @@ async def updateWeeklyDM(verifierId):
     return True
 
 async def sendWeeklyAnnouncement():
-    channel = bot.get_channel(624015516373221397)
+    channel = bot.get_channel(537432296933031937)
     btn = interactions.Button(
         style=interactions.ButtonStyle.PRIMARY,
         label="Get DM",
