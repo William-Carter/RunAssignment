@@ -9,7 +9,7 @@ import botDisplayFunctions as bdf
 import dotenv
 import os
 
-bot = interactions.Client(intents=interactions.Intents.DEFAULT)
+bot = interactions.Client(intents=interactions.Intents.DEFAULT | interactions.Intents.MESSAGE_CONTENT | interactions.Intents.GUILD_MEMBERS)
 
 app = FastAPI()
 
@@ -153,7 +153,8 @@ async def handle_manual_dm(ctx: interactions.ComponentContext):
         verifier.updateMessageStatus(db, True)
         await ctx.send("Check your DMs", ephemeral=True)
         
-    except:
+    except Exception as err:
+        print(err)
         await ctx.send("Sorry, I still couldn't DM you! Yell at alatreph!", ephemeral=True)
     
 
