@@ -136,7 +136,7 @@ async def handle_manual_dm(ctx: interactions.ComponentContext):
         await ctx.send("Sorry, you aren't an active verifier!", ephemeral=True)
         return
     
-    if False and verifier.weeklyMessageReceived:
+    if verifier.weeklyMessageReceived:
         await ctx.send("You should already have a DM for this week!", ephemeral=True)
         return
      
