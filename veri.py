@@ -6,6 +6,8 @@ import uvicorn
 from database.models import Run, Verifier
 from database import Interface
 import botDisplayFunctions as bdf
+import dotenv
+import os
 
 bot = interactions.Client(intents=interactions.Intents.DEFAULT)
 
@@ -164,6 +166,7 @@ async def on_startup():
 
     asyncio.create_task(server.serve())
 
-    #print(await updateWeeklyDM(836238555482816542))
 
-bot.start("MTMzMDg1ODA4MjYwMjg0NDIwMA.GE_mhY.mCHI-SHxtUb4zDwlNIcqp_Cd7BTUaJr6VY3OB4")
+dotenv.load_dotenv()
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+bot.start(BOT_TOKEN)
