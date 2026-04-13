@@ -19,6 +19,9 @@ class Verifier:
         db.insertAndFetchRowID("UPDATE Verifiers SET weeklyMessageReceived = ? WHERE discordId = ?", (int(status), self.discordId))
 
     def __eq__(self, other):
+        if not isinstance(other, Verifier):
+            return False
+
         return self.discordId == other.discordId
 
     def __hash__(self):
