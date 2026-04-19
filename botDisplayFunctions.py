@@ -91,7 +91,6 @@ def getWeeklyAnnouncement(db: Interface.Interface):
     for run in runs:
         collected = False
         for rc in runCollections:
-            #print(run.user, run.category, rc.user, rc.category)
             # Pool runs that are in the same category - only the fastest one needs full verification
             if run.user == rc.user and run.category == rc.category:
                 rc.addRun(run)
@@ -105,6 +104,9 @@ def getWeeklyAnnouncement(db: Interface.Interface):
                     collected = True
                     break
 
+            if collected:
+                break
+
         if not collected:
             rc = RunCollection.RunCollection(-1, run.user, run.category)
             rc.verifier = run.assignedTo
@@ -115,19 +117,38 @@ def getWeeklyAnnouncement(db: Interface.Interface):
     activeVerifiers = verifiers.getActiveVerifiers(db)
     activeVerifiers.sort(key= lambda x: x.name)
 
-    verifierTotals = {v: {"pooled": 0, "runs": 0, "time": 0} for v in activeVerifiers}
+    verifierTotals = {v: {"pooled": 0, "runs": 0, "time": 0, "runList": []} for v in activeVerifiers}
     for rc in runCollections:
         verifierTotals[rc.verifier]["pooled"] += 1
         verifierTotals[rc.verifier]["runs"] += len(rc.runs)
         verifierTotals[rc.verifier]["time"] += rc.duration()
+        verifierTotals[rc.verifier]["runList"].append(rc)
         
-    output = ""
+    finalOutput = []
+    workingOutput = ""
     for verifier in activeVerifiers:
-        output += f"<@{verifier.discordId}> has been assigned {verifierTotals[verifier]['pooled']} ({verifierTotals[verifier]['runs']}) runs totaling {formattedTime(verifierTotals[verifier]['time'])}\n"
+        if verifierTotals[verifier]['runs'] == 0:
+            output = f"<@{verifier.discordId}> hasn't been assigned any runs\n"
+        else:
+            output = f"<@{verifier.discordId}> has been assigned {verifierTotals[verifier]['pooled']} ({verifierTotals[verifier]['runs']}) runs totaling {formattedTime(verifierTotals[verifier]['time'])}\n"
+            for rc in verifierTotals[verifier]["runList"]:
+                subtext = ""
+                for index, run in enumerate(sorted(rc.runs, key = lambda x: x.time)):
+                    if index == 0:
+                        subtext += " "*5+generateLine(run)
+                    else:
+                        subtext += " "*5+generateSubLine(run)
+                output += subtext
+        
+        if len(workingOutput) + len(output) > 1900:
+            finalOutput.append(workingOutput)
+            workingOutput = ""
 
+        workingOutput += output
 
-    output += "If you didn't get a DM, click the button below to get your exact run assignments!"
-    return output
+    finalOutput.append(workingOutput)
+
+    return finalOutput
 
 
 def formattedTime( time) -> str:

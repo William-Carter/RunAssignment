@@ -21,7 +21,8 @@ async def weeklyAnnouncement():
     try:
         await sendWeeklyAnnouncement()
         return {"status": "okay", "message": f"Weekly announcement was sent"}
-    except:
+    except Exception as x:
+        print(x)
         return {"status": "error", "message": f"Announcement failed to send"}
 
 
@@ -116,16 +117,19 @@ async def updateWeeklyDM(verifierId):
     return True
 
 async def sendWeeklyAnnouncement():
-    channel = bot.get_channel(537432296933031937)
+    channel = bot.get_channel(1495317706646491247)
     btn = interactions.Button(
         style=interactions.ButtonStyle.PRIMARY,
         label="Get DM",
         custom_id = "manual_dm_pull"
     )
 
-    message = bdf.getWeeklyAnnouncement(db)
+    messages = bdf.getWeeklyAnnouncement(db)
 
-    await channel.send(content=message, components=btn)
+    for message in messages:
+        await channel.send(content=message,
+                        #components=btn
+                        )
 
 
 @interactions.component_callback("manual_dm_pull")
@@ -157,7 +161,6 @@ async def handle_manual_dm(ctx: interactions.ComponentContext):
         print(err)
         await ctx.send("Sorry, I still couldn't DM you! Yell at alatreph!", ephemeral=True)
     
-
 @interactions.listen()
 async def on_startup():
     print("Bot is ready! Starting web server...")
