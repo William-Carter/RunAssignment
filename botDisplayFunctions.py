@@ -1,6 +1,7 @@
 from database import Interface
 from database import verifiers
 from database.models import Run, RunCollection
+from datetime import datetime, timezone, timedelta
 
 
 def getVerifierAssignments(db: Interface.Interface, verifierId: int):
@@ -80,6 +81,10 @@ def getWeeklyAnnouncement(db: Interface.Interface):
         FROM Assignments
         """
     )
+
+    now = datetime.now(timezone.utc)
+    weekStart = ((now - timedelta(days=now.weekday())).replace(hour=0, minute=0, second=0, microsecond=0).timestamp())
+    assignments = [a for a in assignments if int(a['dateAssigned']) > weekStart]
 
     if len(assignments) == 0:
         return "No runs to be assigned this week!"
