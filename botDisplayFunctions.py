@@ -87,7 +87,7 @@ def getWeeklyAnnouncement(db: Interface.Interface):
     assignments = [a for a in assignments if int(a['dateAssigned']) > weekStart]
 
     if len(assignments) == 0:
-        return "No runs to be assigned this week!"
+        return ["No runs to be assigned this week!"]
 
     runs = [Run.runFromId(db, x['runId']) for x in assignments]
 
