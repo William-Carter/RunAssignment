@@ -70,7 +70,7 @@ def constructRunFromSrcData(queuePosition: int, data: dict) -> Run:
     runnerId = data["players"]["data"][0]["id"]
     description = data["comment"]
 
-    if data["videos"]:
+    if data["videos"] and "links" in data["videos"]:
         video = data["videos"]["links"][0]["uri"]
     else:
         video = None
