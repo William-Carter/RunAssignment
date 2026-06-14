@@ -39,7 +39,6 @@ def update_assignment_on_src(db: Interface, run_id: str, assignee_src_id: str) -
                 UPDATE Assignments
                 SET assignedOnSRC = 1
                 WHERE runId = ?
-                AND verifierId = ?
                 """,
                 (run_id, assignee_src_id)
             )
