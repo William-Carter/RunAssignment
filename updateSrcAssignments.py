@@ -40,7 +40,7 @@ def update_assignment_on_src(db: Interface, run_id: str, assignee_src_id: str) -
                 SET assignedOnSRC = 1
                 WHERE runId = ?
                 """,
-                (run_id)
+                (run_id,)
             )
 
             return True
