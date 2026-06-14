@@ -18,7 +18,7 @@ HEADERS = {
 }
 
 
-def update_assignment_on_src(run_id: str, assignee_src_id: str) -> bool:
+def update_assignment_on_src(db: Interface, run_id: str, assignee_src_id: str) -> bool:
     """
     Update a run assignment on speedrun.com.
     
@@ -34,13 +34,26 @@ def update_assignment_on_src(run_id: str, assignee_src_id: str) -> bool:
         response = requests.post(API_URL, headers=HEADERS, json=payload)
         if response.status_code == 200:
             print(f"✓ Updated run {run_id} to assignee {assignee_src_id}")
+            db.insertAndFetchRowID(
+                """
+                UPDATE Assignments
+                SET assignedOnSRC = 1
+                WHERE runId = ?
+                AND verifierId = ?
+                """,
+                (run_id, assignee_src_id)
+            )
+
             return True
+        elif response.status_code == 401:
+            print("Failed to authenticate! PHP Session token has likely expired!")
+            return False
         else:
-            print(f"✗ Failed to update run {run_id}: {response.status_code}")
+            print(f"Failed to update run {run_id}: {response.status_code}")
             print(f"  Response: {response.json()}")
             return False
     except Exception as e:
-        print(f"✗ Error updating run {run_id}: {str(e)}")
+        print(f"Error updating run {run_id}: {str(e)}")
         return False
 
 
@@ -50,7 +63,7 @@ def main():
     # Get all assignments from the database
     assignments = db.executeQuery(
         """
-        SELECT Assignments.runId, Assignments.verifierId
+        SELECT Assignments.runId, Assignments.verifierId, Assignments.assignedOnSRC
         FROM Assignments
         """
     )
@@ -65,20 +78,23 @@ def main():
     failed_count = 0
     
     for assignment in assignments:
+        if assignment["assignedOnSRC"]:
+            continue
+
         run_id = assignment["runId"]
         verifier_id = assignment["verifierId"]
         
         # Get verifier's speedrun.com ID
         verifier = Verifier.verifierFromId(db, verifier_id)
         if not verifier:
-            print(f"✗ Verifier {verifier_id} not found for run {run_id}")
+            print(f"Verifier {verifier_id} not found for run {run_id}")
             failed_count += 1
             continue
         
         srcId = verifier.srcId
         
         # Update on speedrun.com
-        if update_assignment_on_src(run_id, srcId):
+        if update_assignment_on_src(db, run_id, srcId):
             success_count += 1
         else:
             failed_count += 1
